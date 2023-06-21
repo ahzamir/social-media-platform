@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
-const bycrypt = require('bcryptjs');
+const Schema = mongoose.Schema;
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
     email: {
         type: String,
         required: [true, 'Please enter your email'],
@@ -12,3 +12,7 @@ const userSchema = new mongoose.Schema({
         required: [true, 'Please enter your password'],
     }
 });
+
+const UserModel = mongoose.model('user', userSchema);
+
+module.exports = UserModel;
