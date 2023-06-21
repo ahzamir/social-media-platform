@@ -1,6 +1,6 @@
 const passport = require('passport');
 const localStrategy = require('passport-local').Strategy;
-const UserModel = require('../model/user');
+const UserModel = require('../models/user');
 const JWTstrategy = require('passport-jwt').Strategy;
 const ExtractJWT = require('passport-jwt').ExtractJwt;
 
@@ -32,7 +32,7 @@ passport.use(
         },
         async (email, password, done) => {
             try {
-                const user = await UserModel.findeOne({ email });
+                const user = await UserModel.findOne({ email });
 
                 if (!user) {
                     return done(null, false, { message: 'User not found' });
@@ -55,7 +55,7 @@ passport.use(
 passport.use(
     new JWTstrategy(
         {
-            secretOrKey: 'top_secret',
+            secretOrKey: 'TOP_SECRET',
             jwtFromRequest: ExtractJWT.fromUrlQueryParameter('secret_token')
         },
         async (token, done) => {

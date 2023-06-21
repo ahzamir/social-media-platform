@@ -36,13 +36,12 @@ userSchema.pre(
     }
 );
 
-userSchema.methods.comparePassword = function (password, callback) {
-    bcrypt.compare(password, this.password, (err, isMatch) => {
-        if (err) {
-            return callback(err);
-        }
-        callback(null, isMatch);
-    })
+userSchema.methods.isValidPassword = async function (password) {
+    const user = this;
+    // const compare = await bcrypt.compare(password, user.password);
+    const compare = password === user.password;
+
+    return compare;
 }
 
 const UserModel = mongoose.model('user', userSchema);

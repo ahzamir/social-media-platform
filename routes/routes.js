@@ -35,7 +35,7 @@ router.post(
                             if (error) return next(error);
 
                             const body = { _id: user._id, email: user.email };
-                            const token = jwt.sign({ user: body }, 'top_secret');
+                            const token = jwt.sign({ user: body }, 'TOP_SECRET');
 
                             return res.json({ token });
                         }
