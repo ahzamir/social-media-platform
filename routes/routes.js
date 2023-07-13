@@ -2,6 +2,8 @@ const express = require('express');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 
+const UserModel = require('../models/user')
+
 const router = express.Router();
 
 router.post(
@@ -37,7 +39,11 @@ router.post(
                             const body = { _id: user._id, email: user.email };
                             const token = jwt.sign({ user: body }, 'TOP_SECRET');
 
-                            return res.json({ token });
+                            return res.json({ 
+                                token,
+                                message: 'Login successful',
+                                user: req.user 
+                            });
                         }
                     );
                 } catch (error) {

@@ -2,8 +2,14 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const postSchema = new Schema({
-    title: String,
-    content: String,
+    title: {
+        type: String,
+        required: [true, 'Please enter a title']
+    },
+    content: {
+        type: String,
+        required: [true, 'Please enter content']
+    },
     author: {
         type: Schema.Types.ObjectId,
         ref: 'user'
@@ -15,3 +21,5 @@ const postSchema = new Schema({
 });
 
 const PostModel = mongoose.model('post', postSchema);
+
+module.exports = PostModel;

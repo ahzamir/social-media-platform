@@ -4,8 +4,7 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const passport = require('passport');
 const bodyParser = require('body-parser');
-
-const User = require('./models/user');
+const postRoutes = require('./routes/postRoutes');
 
 connectDB();
 
@@ -27,6 +26,8 @@ app.use(session({
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use('/', routes);
+
+app.use('/', postRoutes);
 
 app.use('/user', passport.authenticate('jwt', { session: false }), secureRoute);
 
