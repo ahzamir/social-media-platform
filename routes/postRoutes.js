@@ -76,8 +76,20 @@ router.delete(
     '/posts/:id',
     getPost,
     async (req, res, next) => {
+        const authHeader = req.headers.authorization;
+        const token = authHeader.split(' ')[1];
+
+        const decoded = jwt.verify(token, 'TOP_SECRET');
+        const userId = decoded.user._id;
+
+        if (res.post.author != userId) {
+            return res.status(403).json({
+                message: 'Not allowed to delete another user\'s post'
+            });
+        }
+
         try {
-            await res.post.remove();
+            post = await PostModel.findByIdAndDelete(req.params.id);
 
             res.json({
                 message: 'Post deleted'
