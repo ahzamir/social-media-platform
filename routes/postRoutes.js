@@ -49,23 +49,33 @@ router.post(
                 post: newPost
             });
         } catch (error) {
-    next(error);
-}
+            next(error);
+        }
     }
 );
 
 router.put(
     '/posts/:id',
     getPost,
+    checkUser,
     async (req, res, next) => {
         const { title, content } = req.body;
 
-        if (title != null) res.post.title = title;
-        if (content != null) res.post.content = content;
-
+        post = await PostModel.findById(req.params.id);
+        if (title != null) {
+            post.title = title;
+        }
+        if (content != null) {
+            post.content = content;
+        }
+        
         try {
-            const updatedPost = await res.post.save();
-            res.json(updatedPost);
+            const updatedPost = await post.save();
+
+            res.json({
+                message: 'Post updated',
+                post: updatedPost
+            });
         } catch (error) {
             next(error);
         }
@@ -75,19 +85,8 @@ router.put(
 router.delete(
     '/posts/:id',
     getPost,
+    checkUser,
     async (req, res, next) => {
-        const authHeader = req.headers.authorization;
-        const token = authHeader.split(' ')[1];
-
-        const decoded = jwt.verify(token, 'TOP_SECRET');
-        const userId = decoded.user._id;
-
-        if (res.post.author != userId) {
-            return res.status(403).json({
-                message: 'Not allowed to delete another user\'s post'
-            });
-        }
-
         try {
             post = await PostModel.findByIdAndDelete(req.params.id);
 
@@ -118,6 +117,21 @@ async function getPost(req, res, next) {
     }
 
     res.post = post;
+
+    next();
+}
+
+async function checkUser(req, res, next) {
+    const authHeader = req.headers.authorization;
+    const token = authHeader.split(' ')[1];
+
+    const decoded = jwt.verify(token, 'TOP_SECRET');
+    
+    if (res.post.author != decoded.user._id) {
+        return res.status(403).json({
+            message: 'You are not allowed to delete or update another user\'s post'
+        });
+    }
 
     next();
 }
