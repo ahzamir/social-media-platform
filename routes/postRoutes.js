@@ -7,7 +7,7 @@ router.get(
     '/posts',
     async (req, res, next) => {
         try {
-            const posts = await PostModel.find({});
+            const posts = await PostModel.find({ visible: true }).sort({ createdAt: -1 });
 
             res.json(posts);
         } catch (error) {
@@ -24,14 +24,46 @@ router.get(
     }
 );
 
+router.get(
+    '/user/posts',
+    async (req, res, next) => {
+        const userId = getUserId(req);
+
+        try {
+            const posts = await PostModel.find({ author: userId }).sort({ createdAt: -1 });
+
+            res.json({
+                message: 'All your posts are here',
+                posts: posts
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+router.get(
+    '/user/posts/private',
+    async (req, res, next) => {
+        const userId = getUserId(req);
+
+        try {
+            const posts = await PostModel.find({ author: userId, visible: false }).sort({ createdAt: -1 });
+
+            res.json({
+                message: 'All your private posts are here',
+                posts: posts
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 router.post(
     '/posts',
     async (req, res, next) => {
-        const authHeader = req.headers.authorization;
-        const token = authHeader.split(' ')[1];
-
-        const decoded = jwt.verify(token, 'TOP_SECRET');
-        const userId = decoded.user._id;
+        const userId = getUserId(req);
 
         const { title, content } = req.body;
 
@@ -59,7 +91,7 @@ router.put(
     getPost,
     checkUser,
     async (req, res, next) => {
-        const { title, content } = req.body;
+        const { title, content, visible } = req.body;
 
         post = await PostModel.findById(req.params.id);
         if (title != null) {
@@ -67,6 +99,9 @@ router.put(
         }
         if (content != null) {
             post.content = content;
+        }
+        if (visible != null) {
+            post.visible = visible;
         }
         
         try {
@@ -122,18 +157,30 @@ async function getPost(req, res, next) {
 }
 
 async function checkUser(req, res, next) {
-    const authHeader = req.headers.authorization;
-    const token = authHeader.split(' ')[1];
+    if (!req.headers.authorization) {
+        return res.status(401).json({
+            message: 'You are not authorized to perform this action'
+        });
+    }
 
-    const decoded = jwt.verify(token, 'TOP_SECRET');
+    const userId = getUserId(req);
     
-    if (res.post.author != decoded.user._id) {
+    if (res.post.author != userId) {
         return res.status(403).json({
             message: 'You are not allowed to delete or update another user\'s post'
         });
     }
 
     next();
+}
+
+const getUserId = (req) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader.split(' ')[1];
+
+    const decoded = jwt.verify(token, 'TOP_SECRET');
+    const userId = decoded.user._id;
+    return userId;
 }
 
 module.exports = router;
